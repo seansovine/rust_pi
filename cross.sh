@@ -12,6 +12,5 @@ case "$yn" in
     * ) echo "Invalid response. Please answer yes or no."; exit 1;;
 esac
 
-scp target/aarch64-unknown-linux-gnu/release/rust_pi \
-    target/aarch64-unknown-linux-gnu/release/prime_benchmark \
+scp target/aarch64-unknown-linux-gnu/release/{rust_pi,prime_benchmark,weather} \
     rpi3bp:/home/sean/code/rust_pi_demo/
