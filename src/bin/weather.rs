@@ -72,6 +72,7 @@ async fn log_to_db(pool: &SqlitePool, reading: &WeatherApiResult) -> Result<(), 
     .bind(reading.main.temp)
     .execute(pool)
     .await?;
+
     Ok(())
 }
 
@@ -80,12 +81,15 @@ async fn setup_db_conn() -> Result<SqlitePool, sqlx::Error> {
     let options = SqliteConnectOptions::from_str(database_url)?.create_if_missing(true);
     let pool = SqlitePool::connect_with(options).await?;
 
-    let count: i64 =
-        query_scalar("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='$1'")
-            .bind("weather_readings")
-            .fetch_one(&pool)
-            .await?;
-    if count == 0 {
+    let has_tables = query_scalar::<_, i64>(
+        "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='$1'",
+    )
+    .bind("weather_readings")
+    .fetch_one(&pool)
+    .await?
+        > 0;
+
+    if !has_tables {
         query(
             "CREATE TABLE IF NOT EXISTS weather_readings (
                  id INTEGER PRIMARY KEY AUTOINCREMENT,
