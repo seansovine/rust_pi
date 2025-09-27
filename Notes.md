@@ -12,7 +12,7 @@ See [GIMPS](https://www.mersenne.org/primes/) for a list of known Mersenne prime
 API call for local weather (Blacksburg, VA):
 
 ```
-https://api.openweathermap.org/data/3.0/onecall?lat=37.23&lon=-80.41&appid={API key}
+https://api.openweathermap.org/data/2.5/weather?q=blacksburg,va,us&appid={API key}
 ```
 
 The API key is in the uncommitted file `OPENWEATHERMAP_KEY`.
