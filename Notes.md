@@ -17,6 +17,28 @@ https://api.openweathermap.org/data/2.5/weather?q=blacksburg,va,us&appid={API ke
 
 The API key is in the uncommitted file `OPENWEATHERMAP_KEY`.
 
-We will make a Rust program to call to this API and parse the results,
-and then store present those in a useful format. Maybe providing a weather
-service on our local network.
+The `src/bin/weather.rs` program makes a call to this API, extracts part
+of the resulting weather data, and stores some of that data in a sqlite
+database. It's great that cross-compilation just works for all the
+dependencies we're using, including `sqlx` with `sqlite`.
+
+__Testing on the Pi:__
+
+```bash
+sudo apt install sqlite3
+sqlite3 database.sqlite3
+```
+
+```sql
+sqlite> .mode table
+sqlite> select * from weather_reading;
+```
+
+__Next plan:__
+
+We will use something like the `daemonize` crate to make this a daemon that
+we can keep running on our Raspberry Pi server, and we will add an API that
+we can query on our local network to get weather information.
+
+Really the point of this is to see what the Pi 3B+ can do, and what we can
+do with it. And for fun, of course.

@@ -1,4 +1,6 @@
 /target
 /scratch
 
+*.sqlite3
+
 OPENWEATHERMAP_KEY
