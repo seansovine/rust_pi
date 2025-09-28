@@ -1,6 +1,6 @@
 use serde::Deserialize;
 use sqlx::{SqlitePool, query, query_scalar, sqlite::SqliteConnectOptions};
-use std::{error::Error, str::FromStr, time::Duration};
+use std::{error::Error, fs::File, io::Read, str::FromStr, time::Duration};
 use ureq::Agent;
 
 const API_KEY_VAR: &str = "OPENWEATHERMAP_KEY";
@@ -37,25 +37,35 @@ pub struct WeatherApiResult {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    // Get openweathermap api key from environment.
-    let api_key = std::env::var(API_KEY_VAR).expect("OPENWEATHERMAP_KEY variable is not set.");
+    // Get openweathermap api key from environment or file.
+    let api_key = std::env::var(API_KEY_VAR).unwrap_or_else(|_| {
+        let mut key_file = File::open("OPENWEATHERMAP_KEY").expect(
+            "OPENWEATHERMAP_KEY env var was not set and no OPENWEATHERMAP_KEY file was present.",
+        );
+        let mut key = String::new();
+        key_file
+            .read_to_string(&mut key)
+            .expect("Failed to read OPENWEATHERMAP_KEY file.");
+        key.trim().into()
+    });
 
     // Connect to database, setting up if needed.
     let pool = setup_db_conn().await?;
 
+    // Query http json api.
     let api_url = format!(
         "https://api.openweathermap.org/data/2.5/weather?q=blacksburg,va,us&units=imperial&APPID={api_key}"
     );
-
     let config = Agent::config_builder()
         .timeout_global(Some(Duration::from_secs(5)))
         .build();
     let agent: Agent = config.into();
 
     let result: WeatherApiResult = agent.get(api_url).call()?.body_mut().read_json()?;
-    dbg!(&result);
     log_to_db(&pool, &result).await?;
+    dbg!(&result);
 
+    // Close database connection.
     pool.close().await;
 
     Ok(())
